@@ -24,6 +24,7 @@ Data structure based on this `link <https://pymupdf.readthedocs.io/en/latest/tex
         'tab_stops': [15.4, 35.0]
     }
 '''
+import logging
 
 from docx.shared import (Pt,Inches)
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -320,7 +321,7 @@ class TextBlock(Block):
         # ------------------------------------
         # (1) set paragraph indentation
         # NOTE: different left spacing setting in case first line indent and hanging
-        left_space  = self.left_space        
+        left_space  = self.left_space
         if self.first_line_space<0: # in case hanging
             left_space -= self.first_line_space           
         
@@ -363,7 +364,13 @@ class TextBlock(Block):
         # ------------------------------------
         # add lines
         # ------------------------------------
-        for line in self.lines: line.make_docx(p)
+        isjinsuo = False
+        if len(self.lines) > 1 and (self.bbox.x0 == self.lines[len(self.lines) - 1].bbox.x0 and self.bbox.y0 == self.lines[len(self.lines) - 1].bbox.y0):
+            isjinsuo = True
+        logging.info("block lines len == %s", len(self.lines))
+        logging.info("block x0 == %s", self.bbox.x0)
+        logging.info("block lines x0 == %s", self.lines[len(self.lines) - 1].bbox.x0)
+        for line in self.lines: line.make_docx(p, isjinsuo)
 
         return p
 

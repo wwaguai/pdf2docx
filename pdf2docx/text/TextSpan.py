@@ -26,6 +26,7 @@ this `link <https://pymupdf.readthedocs.io/en/latest/textpage.html>`_::
         ]
     }
 '''
+import logging
 
 import fitz
 from docx.shared import Pt, RGBColor
@@ -358,9 +359,8 @@ class TextSpan(Element):
         return span
 
 
-    def make_docx(self, paragraph):
-        '''Add text span to a docx paragraph, and set text style, e.g.
-        font, color, underline, hyperlink, etc.
+    def make_docx(self, paragraph, isjinsuo):
+        '''Add text span to a docx paragraph, and set text style, e.g. font, color, underline, hyperlink, etc.
 
         .. note::
             Hyperlink and its style is parsed separately from pdf. For instance, regarding a general
@@ -377,9 +377,12 @@ class TextSpan(Element):
 
         # set text style, e.g. font, underline and highlight
         self._set_text_format(docx_run)
-
+        logging.info("is jin suo === %s", isjinsuo)
+        if isjinsuo:
+            self.char_spacing = (self.chars[0].bbox.x1 - self.chars[0].bbox.x0) * -1
         # set charters spacing
-        if self.char_spacing:
+        logging.info("changed char_spacing === %s", self.char_spacing)
+        if self.char_spacing: 
             docx.set_char_spacing(docx_run, self.char_spacing)
 
 

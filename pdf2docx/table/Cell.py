@@ -82,7 +82,7 @@ class Cell(Layout):
         # ---------------------
         # experience: width of merged cells may change if not setting width for merged cells
         x0, y0, x1, y1 = self.bbox
-        docx_cell.width = Pt(x1-x0)
+        docx_cell.width = Pt(x1-x0+self.blocks.bbox.x0-x0)
 
         # insert contents
         # NOTE: there exists an empty paragraph already in each cell, which should be deleted

@@ -13,6 +13,7 @@ Data structure of line in text block referring to this
         'spans': [ spans ]
     }
 '''
+import logging
 
 from fitz import Point
 try:
@@ -163,8 +164,7 @@ class Line(Element):
 
         return line
 
-
-    def make_docx(self, p):
+    def make_docx(self, p, isjinsuo):
         '''Create docx line, i.e. a run in ``python-docx``.'''
         # tab stop before this line to ensure horizontal position
         # Note it might need more than one tabs if multi-tabs are set for current paragraph
@@ -172,7 +172,12 @@ class Line(Element):
             for _ in range(self.tab_stop): p.add_run().add_tab()
 
         # create span -> run in paragraph
-        for span in self.spans: span.make_docx(p)            
+        for span in self.spans:
+            logging.info("make docx span text = %s", span.text)
+            if '\\n' in repr(span.text) or '\\r' in repr(span.text):
+                print("Text contains new line or carriage return.")
+
+            span.make_docx(p, isjinsuo)
 
         # line break
         if self.line_break: p.add_run('\n')

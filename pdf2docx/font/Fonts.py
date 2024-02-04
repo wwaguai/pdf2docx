@@ -20,6 +20,7 @@ but more generic properties are required further:
 '''
 
 import os
+import logging
 from io import BytesIO
 from collections import namedtuple
 from fontTools.ttLib import TTFont
@@ -30,7 +31,8 @@ from ..common.share import decode
 
 Font = namedtuple('Font', [ 'descriptor',     # font descriptor
                             'name',           # real font name
-                            'line_height'])   # standard line height ratio
+                            'line_height',
+                            'is_italic',])   # standard line height ratio
 
 
 class Fonts(BaseCollection):
@@ -67,6 +69,7 @@ class Fonts(BaseCollection):
             for f in page.get_fonts(): xrefs.add(f[0])
 
         # process xref one by one
+        is_italic = cls.isItalic(fitz_doc)
         fonts = []
         for xref in xrefs:
             basename, ext, _, buffer = fitz_doc.extract_font(xref)
@@ -74,6 +77,7 @@ class Fonts(BaseCollection):
 
             basename = decode(basename)
             name = cls._normalized_font_name(basename)
+            logging.info("font name = %s", name)
 
             try:
                 # supported fonts: open/true type only
@@ -91,11 +95,23 @@ class Fonts(BaseCollection):
             fonts.append(Font(
                 descriptor=cls._to_descriptor(name),
                 name=name,
-                line_height=line_height))
+                line_height=line_height,
+                is_italic=is_italic,))
 
         return cls(fonts)
-
-
+    @staticmethod
+    def isItalic(fitz_doc):
+        xreflen = fitz_doc.xref_length()  # number of objects in file
+        for xref in range(1, xreflen):  # skip item 0!
+            if stream := fitz_doc.xref_stream(xref):
+                operations = str(stream).split(' ')
+                tm_values = []
+                for i in range(len(operations)):
+                    if operations[i] == 'Tm':
+                        tm_values = operations[i - 6:i]
+                        if float(tm_values[2]) > 0:
+                            return True
+        return False
     @staticmethod
     def _normalized_font_name(name):
         '''Normalize raw font name, e.g. BCDGEE+Calibri-Bold, BCDGEE+Calibri -> Calibri.'''

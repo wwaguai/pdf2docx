@@ -1,5 +1,6 @@
 '''Entry for ``pdf2docx`` command line.'''
 import logging
+import sys
 from .converter import Converter
 
 
@@ -41,6 +42,7 @@ class PDF2DOCX:
             cv.convert(docx_file, start, end, pages, **kwargs)
         except Exception as e:
             logging.error(e)
+            sys.stderr.write(e)
         finally:
             cv.close()
 

@@ -103,6 +103,12 @@ class RawPage(BasePage, ABC):
         for span in spans:
             font = fonts.get(span.font)
             if not font: continue
+            if font.is_italic:
+                span.flags |= 1 << 1
+
+
+
+
 
             # update font properties with font parsed by fonttools
             span.font = font.name
