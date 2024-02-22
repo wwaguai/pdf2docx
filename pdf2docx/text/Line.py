@@ -176,8 +176,10 @@ class Line(Element):
             logging.info("make docx span text = %s", span.text)
             if '\\n' in repr(span.text) or '\\r' in repr(span.text):
                 print("Text contains new line or carriage return.")
-
-            span.make_docx(p, isjinsuo)
+            if isinstance(span, TextSpan):
+                span.make_docx(p, isjinsuo)
+            else:
+                span.make_docx(p)
 
         # line break
         if self.line_break: p.add_run('\n')
