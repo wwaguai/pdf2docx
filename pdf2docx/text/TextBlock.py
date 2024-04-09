@@ -371,7 +371,7 @@ class TextBlock(Block):
         logging.info("block x0 == %s", self.bbox.x0)
         logging.info("block lines x0 == %s", self.lines[len(self.lines) - 1].bbox.x0)
         for line in self.lines: line.make_docx(p, isjinsuo)
-
+        self.insertHR(p)
         return p
 
 

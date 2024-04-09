@@ -267,7 +267,7 @@ class Blocks(ElementCollection):
         
         self.reset(blocks)
 
-
+    # 这里把文本的形状格式结合到文本里 shape —> block
     def parse_text_format(self, rects, delete_end_line_hyphen:bool):
         '''Parse text format with style represented by stroke/fill shapes.
         
@@ -319,17 +319,21 @@ class Blocks(ElementCollection):
 
         pre_table = False
         cell_layout = isinstance(self.parent, Cell)
+        logging.info("-==========")
+        logging.info("blocks len = %d", len(self._instances))
         for block in self._instances:
             # make paragraphs
-            if block.is_text_image_block:                
+            if block.is_text_image_block:
                 # new paragraph
+                logging.info("````````````")
                 p = doc.add_paragraph()
                 block.make_docx(p)
 
                 pre_table = False # mark block type
-            
+
             # make table
             elif block.is_table_block:
+                logging.info("00000000000")
                 make_table(block, pre_table)
                 pre_table = True # mark block type
 

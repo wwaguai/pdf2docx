@@ -18,6 +18,7 @@ Terms definition:
   virtual border adaptive in a certain range, then converted to a stroke once finalized, 
   and finally applied to detect table border.
 '''
+import logging
 
 from ..common import constants
 from ..common.Element import Element
@@ -51,7 +52,7 @@ class TablesConstructor:
             max_border_width (float): Max border width.
         """
         if not self._shapes: return
-
+        logging.info("=-=-=-=-=-=-")
         def remove_overlap(instances:list):
             '''Delete group when it's contained in a certain group.'''
             # group instances if contained in other instance
@@ -88,6 +89,7 @@ class TablesConstructor:
             'min_border_clearance': min_border_clearance,
             'max_border_width': max_border_width
         }
+        logging.info("111888888888888888888888")
         for strokes in grouped_strokes:
             # potential shadings in this table region
             group_fills = fills.contained_in_bbox(strokes.bbox)
@@ -100,6 +102,7 @@ class TablesConstructor:
 
         # assign blocks/shapes to each table
         self._blocks.assign_to_tables(tables)
+        logging.info("888888888888888888888")
         self._shapes.assign_to_tables(tables)
 
 

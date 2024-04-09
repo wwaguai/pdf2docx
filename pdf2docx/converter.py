@@ -125,10 +125,12 @@ class Converter:
             pages (list, optional): Range of page indexes to parse. Defaults to None.
             kwargs (dict, optional): Configuration parameters. 
         '''
+        # 1. load_pages 加载页面 先生成对应页数的pages
+        # 2. parse_document 解析页面，将raw_page转换为中间数据结构 page及内的 section（抽象类layout）
+        # 3. parse_pages 解析页面数据及布局到 block的 line、 span中
         return self.load_pages(start, end, pages) \
             .parse_document(**kwargs) \
             .parse_pages(**kwargs)
-
 
     def load_pages(self, start:int=0, end:int=None, pages:list=None):
         '''Step 1 of converting process: open PDF file with ``PyMuPDF``, 

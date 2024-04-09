@@ -47,3 +47,4 @@ class Column(Layout):
             doc (Document): ``python-docx`` document object
         '''
         self.blocks.make_docx(doc)
+        self.shapes.make_docx(doc)

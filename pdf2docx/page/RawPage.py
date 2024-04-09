@@ -5,7 +5,7 @@
 * calculate page margin
 * parse page structure roughly, i.e. section and column
 '''
-
+import logging
 from abc import (ABC, abstractmethod)
 from .BasePage import BasePage
 from ..layout.Section import Section
@@ -176,10 +176,12 @@ class RawPage(BasePage, ABC):
                 column = sections[-1][0] # type: Column
                 column.union_bbox(elements)
                 column.add_elements(elements)
+                logging.info("eeeeeee")
             # otherwise, create new section
             else:
                 section = self._create_section(num_col, elements, (X0, X1), y_ref)
                 if section:
+                    logging.info("ghhjjjj")
                     sections.append(section)
 
 
@@ -188,8 +190,11 @@ class RawPage(BasePage, ABC):
         y_ref = Y0 # to calculate v-distance between sections
         for row in elements.group_by_rows():
             # check column col by col
+            logging.info("nnnnnnnnn")
             cols = row.group_by_columns()
             current_num_col = len(cols)
+
+            logging.info("col len = %d", current_num_col)
 
             # column check:
             # consider 2-cols only

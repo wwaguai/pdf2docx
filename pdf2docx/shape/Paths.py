@@ -7,6 +7,7 @@ Square and Highlight considered.
 * https://pymupdf.readthedocs.io/en/latest/page.html#Page.get_drawings
 * https://pymupdf.readthedocs.io/en/latest/faq.html#extracting-drawings
 '''
+import logging
 
 import fitz
 from ..image.ImagesExtractor import ImagesExtractor
@@ -19,6 +20,8 @@ class Paths(Collection):
     '''A collection of paths.'''
 
     def restore(self, raws:list):
+        num = len(raws)
+        logging.info("paths len = %d", num)
         '''Initialize paths from raw data get by ``page.get_drawings()``.'''
         rect = (0, 0, self.parent.width, self.parent.height)
         for raw in raws:
@@ -96,8 +99,11 @@ class Paths(Collection):
         '''
         # convert all paths to shapes if no non-iso-orientated path exists
         iso_shapes = []
+        logging.info("ttttttttt!!!!")
+
         if self.is_iso_oriented:
             iso_shapes.extend(self.to_shapes())
+            logging.info("jjjjjjjj!!!!")
             return iso_shapes, []
 
         # detect svg with python opencv
@@ -124,9 +130,12 @@ class Paths(Collection):
                     break
 
         # check each group
-        for (bbox, inner_bboxes), paths in zip(groups, group_paths): 
+        for (bbox, inner_bboxes), paths in zip(groups, group_paths):
+            logging.info("rrrrrrrrrrr!!!!")
+
             # all iso-oriented paths -> it's a table, but might contain svg in cell as well
             if paths.is_iso_oriented:
+                logging.info("kkkkkkkkkk!!!!")
                 iso_shapes.extend(paths.to_shapes())
                 for svg_bbox in inner_bboxes:
                     images.append(ie.clip_page_to_dict(bbox=fitz.Rect(svg_bbox),

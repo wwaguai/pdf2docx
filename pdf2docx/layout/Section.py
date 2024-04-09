@@ -19,6 +19,7 @@ to distinguish these different layouts.
         }, ...]
     }
 '''
+import logging
 
 from docx.enum.section import WD_SECTION
 from ..common.docx import set_columns
@@ -72,6 +73,7 @@ class Section(BaseCollection):
 
     def parse(self, **settings):
         '''Parse section layout.'''
+        logging.info("section parse....")
         for column in self: column.parse(**settings)        
         return self
     
@@ -83,6 +85,7 @@ class Section(BaseCollection):
             doc (Document): ``python-docx`` document object
         '''
         # set section column
+        logging.info("777777777")
         section = doc.sections[-1]
         width_list = [c.bbox[2]-c.bbox[0] for c in self]
         set_columns(section, width_list, self.space)

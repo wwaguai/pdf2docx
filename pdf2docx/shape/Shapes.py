@@ -1,6 +1,7 @@
 '''A group of ``Shape`` instances.'''
+import logging
 
-from .Shape import Shape, Stroke, Fill, Hyperlink
+from .Shape import Shape, Stroke, Fill, Hyperlink, Line
 from ..common.share import RectType
 from ..common.Collection import Collection, ElementCollection
 from ..common import share
@@ -15,7 +16,10 @@ class Shapes(ElementCollection):
         self.reset()
         # Distinguish specified type by key like `start`, `end` and `uri`.
         for raw in raws:
-            if 'start' in raw:
+            if 'isline' in raw:
+                logging.info("lineeeeeeeeee")
+                shape = Line(raw)
+            elif 'start' in raw:
                 shape = Stroke(raw)
             elif 'uri' in raw:
                 shape = Hyperlink(raw)
@@ -122,7 +126,7 @@ class Shapes(ElementCollection):
             else:
                 shapes.append(shape)
         self.reset(shapes)
-
+        logging.info("555555552232, shapes len = %d", len(shapes))
         # detect semantic type
         self._parse_semantic_type()
 
@@ -218,7 +222,9 @@ class Shapes(ElementCollection):
 
         # add hyperlinks back
         hyperlinks = filter(lambda shape: shape.equal_to_type(RectType.HYPERLINK), shapes)
+        logging.info("hyperlinks shapes len = %d ", len(list(hyperlinks)))
         merged_shapes.extend(hyperlinks)
+        logging.info("merged shapes len = %d ", len(merged_shapes))
         return merged_shapes
 
 
@@ -235,7 +241,11 @@ class Shapes(ElementCollection):
         # blocks in page (the original blocks without any further processing)
         blocks = self._parent.blocks
         blocks.sort_in_reading_order()
-
         # check positions between shapes and text blocks
         for shape in self._instances:
             shape.parse_semantic_type(blocks)
+    def make_docx(self, doc):
+        for shape in self._instances:
+            if isinstance(shape, Line):
+                doc.add_paragraph()
+                shape.make_docx(doc)

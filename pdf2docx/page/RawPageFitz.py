@@ -133,6 +133,8 @@ class RawPageFitz(RawPage):
     def _init_paths(self, **settings):
         '''Initialize Paths based on drawings extracted with PyMuPDF.'''
         raw_paths = self.page_engine.get_cdrawings()
+        logging.info("get_cdrawings !!!!!!!")
+
         return Paths(parent=self).restore(raw_paths)
     
 

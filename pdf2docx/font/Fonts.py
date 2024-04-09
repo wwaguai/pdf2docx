@@ -70,6 +70,7 @@ class Fonts(BaseCollection):
 
         # process xref one by one
         is_italic = cls.isItalic(fitz_doc)
+        logging.info("is_italic ==== %s", is_italic)
         fonts = []
         for xref in xrefs:
             basename, ext, _, buffer = fitz_doc.extract_font(xref)
@@ -77,7 +78,9 @@ class Fonts(BaseCollection):
 
             basename = decode(basename)
             name = cls._normalized_font_name(basename)
-            logging.info("font name = %s", name)
+            logging.info("font name sassasa = %s", name)
+
+            logging.info("sasasasasasasasa")
 
             try:
                 # supported fonts: open/true type only
@@ -104,12 +107,13 @@ class Fonts(BaseCollection):
         xreflen = fitz_doc.xref_length()  # number of objects in file
         for xref in range(1, xreflen):  # skip item 0!
             if stream := fitz_doc.xref_stream(xref):
+                logging.info("xref_stream   ===  %s", str(stream))
                 operations = str(stream).split(' ')
                 tm_values = []
                 for i in range(len(operations)):
                     if operations[i] == 'Tm':
                         tm_values = operations[i - 6:i]
-                        if float(tm_values[2]) > 0:
+                        if float(tm_values[2]) != 0:
                             return True
         return False
     @staticmethod

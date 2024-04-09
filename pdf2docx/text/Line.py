@@ -165,6 +165,7 @@ class Line(Element):
         return line
 
     def make_docx(self, p, isjinsuo):
+        logging.info("line make docx....")
         '''Create docx line, i.e. a run in ``python-docx``.'''
         # tab stop before this line to ensure horizontal position
         # Note it might need more than one tabs if multi-tabs are set for current paragraph

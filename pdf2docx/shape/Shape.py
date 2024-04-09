@@ -44,11 +44,14 @@ Data structure::
     which is based on real page CS. So, needn't to multiply Element.ROTATION_MATRIX when initializing
     from source dict.
 '''
+import logging
 
 import fitz
 from ..common.Element import Element
 from ..common.share import RectType
 from ..common import constants
+from docx.oxml.shared import OxmlElement
+from docx.oxml.ns import qn
 
 
 class Shape(Element):
@@ -65,6 +68,7 @@ class Shape(Element):
         # It's able to set shape type in ``RectType``, but a shape might belong to multi-types before
         # it's finalized. So, set int type here.
         self._type = raw.get('type', -1)            # final type
+        logging.info("shape type = %s", self._type)
         self._potential_type = self.default_type    # potential types, a combination of raw RectType-s
 
 
@@ -111,6 +115,7 @@ class Shape(Element):
             blocks (list): A list of ``Line`` instance, sorted in reading order in advance.
         '''
         for line in blocks:
+            logging.info("cccccccc")
             # not intersect yet
             if line.bbox.y1 < self.bbox.y0: continue
             
@@ -119,6 +124,7 @@ class Shape(Element):
 
             # check it when intersected
             rect_type = self._semantic_type(line)
+            logging.info("rect_type = %s", rect_type)
             self._potential_type = rect_type
 
             if rect_type!=self.default_type: break
@@ -233,6 +239,8 @@ class Stroke(Shape):
             return self.default_type        
 
         # check orientation
+
+        logging.info("000000000000000000000001111")
         h_shape = self.horizontal
         h_line = line.is_horizontal_text
         if h_shape != h_line: 
@@ -265,6 +273,28 @@ class Stroke(Shape):
         return (x0-h, y0-h, x1+h, y1+h)
 
 
+class Line(Shape):
+    def make_docx(self, doc):
+        logging.info("add a line")
+        p = doc.add_paragraph()
+        # p is the <w:p> XML element
+        pPr = p._p.get_or_add_pPr()
+        pBdr = OxmlElement('w:pBdr')
+        pPr.insert_element_before(pBdr,
+                                  'w:shd', 'w:tabs', 'w:suppressAutoHyphens', 'w:kinsoku', 'w:wordWrap',
+                                  'w:overflowPunct', 'w:topLinePunct', 'w:autoSpaceDE', 'w:autoSpaceDN',
+                                  'w:bidi', 'w:adjustRightInd', 'w:snapToGrid', 'w:spacing', 'w:ind',
+                                  'w:contextualSpacing', 'w:mirrorIndents', 'w:suppressOverlap', 'w:jc',
+                                  'w:textDirection', 'w:textAlignment', 'w:textboxTightWrap',
+                                  'w:outlineLvl', 'w:divId', 'w:cnfStyle', 'w:rPr', 'w:sectPr',
+                                  'w:pPrChange'
+                                  )
+        bottom = OxmlElement('w:bottom')
+        bottom.set(qn('w:val'), 'single')
+        bottom.set(qn('w:sz'), '6')
+        bottom.set(qn('w:space'), '1')
+        bottom.set(qn('w:color'), 'auto')
+        pBdr.append(bottom)
 class Fill(Shape):
     ''' Rectangular (bbox) filling area of a closed path. 
         The semantic meaning may be table shading, or text style like highlight.
@@ -290,7 +320,9 @@ class Fill(Shape):
             return None
         else:
             return Stroke({'width': w, 'color': self.color}).update_bbox(self.bbox)
-    
+
+    def is_line(self):
+        logging.info("asadgfgfgfgfgfgf")
 
     @property
     def default_type(self):
@@ -361,5 +393,6 @@ class Hyperlink(Shape):
         return RectType.HYPERLINK.value
 
     def parse_semantic_type(self, blocks:list=None):
+        logging.info("uuuuuuuuu")
         '''Semantic type of Hyperlink shape is determined, i.e. ``RectType.HYPERLINK``.'''
         self._potential_type = self.default_type

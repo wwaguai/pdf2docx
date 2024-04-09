@@ -27,6 +27,7 @@ References:
     The coordinates extracted by ``page.get_drawings()`` is based on **real** page CS,
     i.e. with rotation considered. This is different from ``page.get_text('rawdict')``.
 '''
+import logging
 
 import fitz
 from ..common.share import rgb_value
@@ -36,6 +37,8 @@ from ..common import constants
 class Segment:
     '''A segment of path, e.g. a line or a rectangle or a curve.'''
     def __init__(self, item):
+        logging.info("path is %s", item[0])
+
         self.points = item[1:]
 
     def to_strokes(self, width:float, color:list): return []
@@ -72,7 +75,7 @@ class L(Segment):
                 'start': self.points[0],
                 'end'  : self.points[1],
                 'width': width,
-                'color': rgb_value(color)
+                'color': rgb_value(color),
             })
         return strokes
 
@@ -80,9 +83,11 @@ class L(Segment):
 class R(Segment):
     '''Rect path with source ``("re", rect)``.'''
     def __init__(self, item):
+        logging.info("RE INIT......")
         # corner points
         # NOTE: center line of path without stroke width considered
         x0, y0, x1, y1 = item[1]
+        logging.info("Re x0 = %s, y0 = %s, x1 = %s, y1 = %s", x0, y0, x1, y1)
         self.points = [
             (x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0) # close path
             ]
@@ -109,6 +114,7 @@ class R(Segment):
                     'width': width * 2.0, # seems need adjustment by * 2.0
                     'color': rgb_value(color)
                 })
+        logging.info("strokes len === %d", len(strokes))
         return strokes
 
 
@@ -129,14 +135,20 @@ class Segments:
     '''A sub-path composed of one or more segments.'''
     def __init__(self, items:list, close_path=False):
         self._instances = [] # type: list[Segment]
+        logging.info("item len = %d", len(items))
         for item in items:
-            if   item[0] == 'l' : self._instances.append(L(item))
+            logging.info("add segment........")
+            if   item[0] == 'l' :
+                # 为什么这里判断不到，查这里
+                self._instances.append(L(item))
+                logging.info("llllllllllllll1134354564")
             elif item[0] == 'c' : self._instances.append(C(item))
             elif item[0] == 're': self._instances.append(R(item))
             elif item[0] == 'qu': self._instances.append(Q(item))
 
         # close path
         if close_path:
+            logging.info("close_path .....")
             item = ('l', self._instances[-1].points[-1], self._instances[0].points[0])
             line = L(item)
             if line.length>1e-3: self._instances.append(line)
@@ -222,6 +234,17 @@ class Segments:
         Returns:
             dict: ``Fill`` dict.
         """
+        for segment in self._instances:
+            logging.info("tofill  line aasasasa")
+            if isinstance(segment, R):
+                # y0 - y1 小于1的话，视为线段
+                if segment.points[0][1] - segment.points[0][1] < 1:
+                    return {
+                        "isline": True,
+                        'bbox': list(self.bbox),
+                        'color': rgb_value(color)
+                    }
+
         return {
             'bbox' : list(self.bbox),
             'color': rgb_value(color)
@@ -241,6 +264,8 @@ class Path:
         self.raw = raw
         self.path_type = raw['type'] # s, f, or fs
 
+        logging.info("path type = %s", self.path_type)
+
         # always close path if fill, otherwise, depends on property 'closePath'
         close_path = True if self.is_fill else raw.get('closePath', False)
 
@@ -248,6 +273,8 @@ class Path:
         self.items = [] # type: list[Segments]
         self.bbox = fitz.Rect()
         w = raw.get('width', 0.0)
+
+        logging.info("raw items len = %s", len(raw['items']))
         for segments in self._group_segments(raw['items']):
             S = Segments(segments, close_path)
             self.items.append(S)
@@ -270,9 +297,12 @@ class Path:
         """
         segments, segments_list = [], []
         cursor = None
+        logging.info("items lenlen = %s", len(items))
         for item in items:
+            logging.info("item type = %s", item[0])
             # line or curve segment
             if item[0] in ('l', 'c'):
+                logging.info("llllcccccccc")
                 start, end = item[1], item[-1]
                 # add to segments if:
                 # - first point of segments, or
@@ -346,6 +376,7 @@ class Path:
         Returns:
             list: A list of ``Stroke`` dict.
         '''
+        logging.info("_to_strokes---------")
         strokes = []
         for segments in self.items:
             strokes.extend(segments.to_strokes(width, color))
@@ -361,6 +392,7 @@ class Path:
         .. note::
             The real filling area of this path may be not a rectangle.
         '''
+        logging.info("_to_fills---------")
         fills = []
         for segments in self.items:
             fills.append(segments.to_fill(color))

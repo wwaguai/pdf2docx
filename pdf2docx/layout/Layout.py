@@ -24,7 +24,7 @@ The page layout parsing idea:
 #. Calculate vertical spacing based on parsed tables and paragraphs.
 #. Repeat above steps for cell-layout in parsed table level.
 '''
-
+import logging
 from abc import (ABC, abstractmethod)
 from ..text.Line import Line
 from ..common import constants
@@ -100,23 +100,28 @@ class Layout(Element, ABC):
         for shape in shapes:
             if self.working_bbox.intersects(shape.bbox): self.shapes.append(shape)
 
-
     def parse(self, **settings):
         '''Parse layout.
 
         Args:
             settings (dict): Layout parsing parameters.
         '''
-        if not self.blocks: return
+        if not self.blocks:
+            logging.info("is not block")
+            return
 
         # parse tables
+        logging.info("parse layout ...")
         self._parse_table(**settings)
-
+        logging.info("_parse_table done ...")
         # parse paragraphs
         self._parse_paragraph(**settings)
 
+        logging.info("_parse_paragraph done ...")
+
         # parse sub-layout, i.e. cell layouts under table block
         for block in filter(lambda e: e.is_table_block, self.blocks):
+            logging.info("9999999999")
             block.parse(**settings)
 
 
@@ -157,6 +162,7 @@ class Layout(Element, ABC):
         '''Create text block based on lines, and parse text format, e.g. text highlight,
         paragraph indentation '''
         # group lines to text block
+        logging.info("layout _parse_paragraph ...")
         self.blocks.parse_block(
             settings['max_line_spacing_ratio'],
             settings['line_break_free_space_ratio'],
